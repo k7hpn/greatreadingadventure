@@ -18,26 +18,14 @@ namespace GRA.Domain.Report
         "Vendor orders which have not yet shipped.",
         "Vendor",
         RequiredPermission)]
-    public class VendorOrderedNotShippedReport : BaseReport
+    public class VendorOrderedNotShippedReport(ILogger<VendorOrderedNotShippedReport> logger,
+        ServiceFacade.Report serviceFacade,
+        IBranchRepository branchRepository,
+        IVendorCodeRepository vendorCodeRepository)
+        : BaseReport(logger, serviceFacade)
     {
         public const int ReportId = 25;
         private const string RequiredPermission = nameof(Permission.VendorShippingReporting);
-
-        private readonly IBranchRepository _branchRepository;
-        private readonly IVendorCodeRepository _vendorCodeRepository;
-
-        public VendorOrderedNotShippedReport(ILogger<VendorOrderedNotShippedReport> logger,
-            ServiceFacade.Report serviceFacade,
-            IBranchRepository branchRepository,
-            IVendorCodeRepository vendorCodeRepository
-           ) : base(logger, serviceFacade)
-        {
-            ArgumentNullException.ThrowIfNull(branchRepository);
-            ArgumentNullException.ThrowIfNull(vendorCodeRepository);
-
-            _branchRepository = branchRepository;
-            _vendorCodeRepository = vendorCodeRepository;
-        }
 
         public override async Task ExecuteAsync(ReportRequest request,
             CancellationToken token,
@@ -76,10 +64,11 @@ namespace GRA.Domain.Report
             UpdateProgress(progress, 1, "Starting report...", request.Name);
 
             // header row
-            report.HeaderRow = new object[]
-            {
+            report.HeaderRow =
+            [
                 "Code",
                 "Username",
+                "Email",
                 "Reason for Reassignment",
                 "Delivery Branch",
                 "Order Details",
@@ -87,14 +76,14 @@ namespace GRA.Domain.Report
                 "Days Since Ordered",
                 "Packing Slip",
                 "Tracking Number"
-            };
+            ];
 
             int count = 0;
 
-            var branches = await _branchRepository.GetAllAsync(criterion.SiteId.Value);
+            var branches = await branchRepository.GetAllAsync(criterion.SiteId.Value);
             var branchLookup = branches.ToDictionary(k => k.Id, v => v.Name);
 
-            var vendorCodeItemStatuses = await _vendorCodeRepository
+            var vendorCodeItemStatuses = await vendorCodeRepository
                 .GetOrderedNotShipped(criterion.VendorCodeTypeId.Value,
                     criterion.SystemId,
                     criterion.BranchId);
@@ -164,10 +153,11 @@ namespace GRA.Domain.Report
                         report.Links.Add($"{row},8", $"{packingSlipLink}{status.PackingSlip}");
                     }
 
-                    reportData.Add(new object[]
-                    {
+                    reportData.Add(
+                    [
                         status.Code,
                         userInfo.ToString(),
+                        status.Email,
                         reassigned,
                         status.DeliveryBranchId.HasValue
                             ? branchLookup[status.DeliveryBranchId.Value]
@@ -179,13 +169,13 @@ namespace GRA.Domain.Report
                             : string.Empty,
                         status.PackingSlip,
                         status.TrackingNumber
-                    });
+                    ]);
 
                     row++;
                 }
             }
 
-            report.Data = reportData.ToArray();
+            report.Data = [.. reportData];
 
             #endregion Collect data
 

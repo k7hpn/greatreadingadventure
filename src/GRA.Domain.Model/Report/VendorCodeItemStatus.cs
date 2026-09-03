@@ -7,6 +7,7 @@ namespace GRA.Domain.Model.Report
         public DateTime? ArrivalDate { get; set; }
         public string Code { get; set; }
         public int? DeliveryBranchId { get; set; }
+        public string Email { get; set; }
         public string FirstName { get; set; }
         public bool IsUserDeleted { get; set; }
         public string LastName { get; set; }

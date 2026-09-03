@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - JavaScript fix to support improved accessibility for TomSelect
 - Color contrast calculations to ensure accessibility compliance
 - Option to badge report to just run for all challenges
+- Email address to Vendor Ordered Not Shipped report
 
 ## Changed
 
