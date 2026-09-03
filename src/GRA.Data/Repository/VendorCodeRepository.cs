@@ -385,6 +385,7 @@ namespace GRA.Data.Repository
                     {
                         Code = v.Code,
                         DeliveryBranchId = v.BranchId,
+                        Email = u.Email,
                         FirstName = u.FirstName,
                         IsUserDeleted = u.IsDeleted,
                         LastName = u.LastName,
